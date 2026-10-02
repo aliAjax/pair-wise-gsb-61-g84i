@@ -1,4 +1,5 @@
-import type { ApprovalProject, ProjectInput } from '~/types/certification';
+import type { ApprovalProject, EvidenceItem, ProjectInput } from '~/types/certification';
+import { acceptanceViolations, currentSnapshot, deriveBlockingIssues } from './snapshots';
 
 export function validateProjectInput(input: ProjectInput) {
   const errors: Partial<Record<keyof ProjectInput, string>> = {};
@@ -16,24 +17,14 @@ export function validateProjectInput(input: ProjectInput) {
   return errors;
 }
 
-export function validateSubmission(project: ApprovalProject) {
-  const issues: string[] = [];
-  const requiredRegulations = project.regulations.filter((item) => item.required);
-  const missingEvidence = project.evidence.filter((item) =>
-    ['missing', 'rejected', 'resubmit'].includes(item.status)
-  );
-  const versionMismatch = project.evidence.filter(
-    (item) => item.softwareVersion !== project.softwareVersion
-  );
-  const coverageIssue = requiredRegulations.find((item) => item.status !== 'complete');
-  const expiring = new Date(project.certificateExpiry) <= new Date('2026-12-31');
+/** 批准/提交前阻断项：按当前快照与证据实时重算 */
+export function validateSubmission(project: ApprovalProject): string[] {
+  return deriveBlockingIssues(project);
+}
 
-  if (missingEvidence.length) issues.push(`${missingEvidence.length} 项证据缺失、被拒或待补件`);
-  if (versionMismatch.length) issues.push(`${versionMismatch.length} 项证据软件版本与项目基线不一致`);
-  if (coverageIssue) issues.push(`法规项 ${coverageIssue.code} 尚未完整覆盖配置`);
-  if (expiring) issues.push('证书有效期不足 90 天，需先确认续证安排');
-
-  return issues;
+/** 重新确认证据：配置范围必须覆盖当前配置，软件版本必须与项目基线相同 */
+export function validateEvidenceAcceptance(project: ApprovalProject, evidence: EvidenceItem): string[] {
+  return acceptanceViolations(evidence, currentSnapshot(project));
 }
 
 export function validateEvidenceUpgrade(project: ApprovalProject, evidenceIds: string[], note: string) {

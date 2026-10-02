@@ -18,6 +18,7 @@ const form = reactive<ProjectInput>({
 });
 const errors = reactive<Partial<Record<keyof ProjectInput, string>>>({});
 const submitted = ref(false);
+const saveError = ref('');
 
 const vehicleTypeOptions = [
   { label: 'M1 乘用车', value: 'M1' },
@@ -32,10 +33,15 @@ const agencyOptions = [
 
 function submit() {
   submitted.value = true;
+  saveError.value = '';
   Object.assign(errors, validateProjectInput(form));
   if (Object.keys(errors).length) return;
-  const id = store.createProject({ ...form });
-  void router.push(`/projects/${id}`);
+  try {
+    const id = store.createProject({ ...form });
+    void router.push(`/projects/${id}`);
+  } catch (error) {
+    saveError.value = error instanceof Error ? error.message : '项目创建失败，请重试';
+  }
 }
 </script>
 
@@ -47,6 +53,7 @@ function submit() {
   </div>
 
   <UCard>
+    <div v-if="saveError" class="mb-4 border border-red-200 bg-red-50 p-3 text-sm text-red-900">{{ saveError }}</div>
     <form class="grid gap-5 md:grid-cols-2 xl:grid-cols-3" @submit.prevent="submit">
       <UFormGroup label="项目名称" required :error="submitted ? errors.name : undefined">
         <UInput v-model="form.name" placeholder="例如：纯电运动轿车 2028 款" />

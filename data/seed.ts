@@ -1,86 +1,15 @@
-import type { ApprovalProject, RegulationItem } from '~/types/certification';
+import type { ApprovalProject, RegulationCatalogItem } from '~/types/certification';
 
-export const regulationCatalog: RegulationItem[] = [
-  {
-    id: 'REG-BRAKE',
-    code: 'GB 21670',
-    title: '乘用车制动系统技术要求',
-    category: '安全',
-    required: true,
-    status: 'complete',
-    coverage: 100,
-    issues: []
-  },
-  {
-    id: 'REG-LIGHT',
-    code: 'GB 4785',
-    title: '汽车及挂车外部照明和光信号装置',
-    category: '安全',
-    required: true,
-    status: 'missing',
-    coverage: 75,
-    issues: ['长续航配置缺少后雾灯测试']
-  },
-  {
-    id: 'REG-EMC',
-    code: 'GB 34660',
-    title: '道路车辆电磁兼容性要求',
-    category: '环保',
-    required: true,
-    status: 'complete',
-    coverage: 100,
-    issues: []
-  },
-  {
-    id: 'REG-SOFTWARE',
-    code: 'R156',
-    title: '软件更新管理体系',
-    category: '软件',
-    required: true,
-    status: 'conflict',
-    coverage: 67,
-    issues: ['软件基线 8.4.1 与测试报告 8.3.9 不一致']
-  },
-  {
-    id: 'REG-WLTP',
-    code: 'GB 18352.6',
-    title: '轻型汽车污染物排放限值',
-    category: '环保',
-    required: true,
-    status: 'complete',
-    coverage: 100,
-    issues: []
-  },
-  {
-    id: 'REG-BATTERY',
-    code: 'GB 38031',
-    title: '电动汽车用动力蓄电池安全要求',
-    category: '安全',
-    required: true,
-    status: 'complete',
-    coverage: 100,
-    issues: []
-  },
-  {
-    id: 'REG-ENERGY',
-    code: 'GB 27999',
-    title: '乘用车燃料消耗量评价方法及指标',
-    category: '能耗',
-    required: true,
-    status: 'missing',
-    coverage: 80,
-    issues: ['高性能四驱配置尚未提交能耗一致性说明']
-  },
-  {
-    id: 'REG-COMPONENT',
-    code: 'R100.2',
-    title: '电动车辆特定部件安全要求',
-    category: '部件',
-    required: true,
-    status: 'complete',
-    coverage: 100,
-    issues: []
-  }
+/** 法规目录定义；覆盖状态由当前快照与证据实时派生 */
+export const regulationCatalog: RegulationCatalogItem[] = [
+  { id: 'REG-BRAKE', code: 'GB 21670', title: '乘用车制动系统技术要求', category: '安全', required: true },
+  { id: 'REG-LIGHT', code: 'GB 4785', title: '汽车及挂车外部照明和光信号装置', category: '安全', required: true },
+  { id: 'REG-EMC', code: 'GB 34660', title: '道路车辆电磁兼容性要求', category: '环保', required: true },
+  { id: 'REG-SOFTWARE', code: 'R156', title: '软件更新管理体系', category: '软件', required: true },
+  { id: 'REG-WLTP', code: 'GB 18352.6', title: '轻型汽车污染物排放限值', category: '环保', required: true },
+  { id: 'REG-BATTERY', code: 'GB 38031', title: '电动汽车用动力蓄电池安全要求', category: '安全', required: true },
+  { id: 'REG-ENERGY', code: 'GB 27999', title: '乘用车燃料消耗量评价方法及指标', category: '能耗', required: true },
+  { id: 'REG-COMPONENT', code: 'R100.2', title: '电动车辆特定部件安全要求', category: '部件', required: true }
 ];
 
 export const seedProjects: ApprovalProject[] = [
@@ -93,13 +22,14 @@ export const seedProjects: ApprovalProject[] = [
     maintenanceVersion: 'MY27.1',
     softwareVersion: '8.4.1',
     status: 'under_review',
-    progress: 78,
+    progress: 63,
     applicant: '远航汽车工程部',
     reviewer: '刘珊',
     agency: '华东认证中心',
     submittedAt: '2026-09-18',
     updatedAt: '2026-09-28T10:45:00.000Z',
     certificateExpiry: '2026-12-16',
+    currentSnapshotId: 'SNAP-118-02',
     regulations: regulationCatalog,
     evidence: [
       {
@@ -108,12 +38,14 @@ export const seedProjects: ApprovalProject[] = [
         regulationId: 'REG-BRAKE',
         name: '制动系统型式试验报告',
         type: 'test_report',
-        version: 'R3',
+        version: 'R4',
         softwareVersion: '8.4.1',
         configurations: ['长续航四驱版', '标准续航后驱版'],
         status: 'accepted',
         note: '试验条件与量产软件基线一致。',
-        updatedAt: '2026-09-20T03:00:00.000Z'
+        updatedAt: '2026-09-27T08:00:00.000Z',
+        reviewSnapshotId: 'SNAP-118-02',
+        reviewedAt: '2026-09-27T09:10:00.000Z'
       },
       {
         id: 'EV-118-02',
@@ -126,7 +58,8 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['长续航四驱版'],
         status: 'rejected',
         note: '报告软件版本落后于当前整车基线。',
-        updatedAt: '2026-09-25T06:30:00.000Z'
+        updatedAt: '2026-09-28T10:45:00.000Z',
+        reviewSnapshotId: null
       },
       {
         id: 'EV-118-03',
@@ -139,7 +72,8 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['标准续航后驱版'],
         status: 'resubmit',
         note: '需补充长续航四驱配置后雾灯测试。',
-        updatedAt: '2026-09-27T04:10:00.000Z'
+        updatedAt: '2026-09-27T04:10:00.000Z',
+        reviewSnapshotId: null
       },
       {
         id: 'EV-118-04',
@@ -147,12 +81,73 @@ export const seedProjects: ApprovalProject[] = [
         regulationId: 'REG-BATTERY',
         name: '动力电池包安全测试报告',
         type: 'test_report',
-        version: 'R4',
+        version: 'R5',
         softwareVersion: '8.4.1',
         configurations: ['长续航四驱版', '标准续航后驱版'],
         status: 'accepted',
         note: '覆盖全部量产电池配置。',
-        updatedAt: '2026-09-19T08:00:00.000Z'
+        updatedAt: '2026-09-27T08:00:00.000Z',
+        reviewSnapshotId: 'SNAP-118-02',
+        reviewedAt: '2026-09-27T09:12:00.000Z'
+      },
+      {
+        id: 'EV-118-05',
+        projectId: 'TA-2026-118',
+        regulationId: 'REG-EMC',
+        name: '整车电磁兼容测试报告',
+        type: 'test_report',
+        version: 'R3',
+        softwareVersion: '8.4.1',
+        configurations: ['长续航四驱版', '标准续航后驱版'],
+        status: 'accepted',
+        note: '两配置 EMC 试验均通过。',
+        updatedAt: '2026-09-27T08:00:00.000Z',
+        reviewSnapshotId: 'SNAP-118-02',
+        reviewedAt: '2026-09-27T09:15:00.000Z'
+      },
+      {
+        id: 'EV-118-06',
+        projectId: 'TA-2026-118',
+        regulationId: 'REG-WLTP',
+        name: '轻型车排放与能耗试验报告',
+        type: 'test_report',
+        version: 'R2',
+        softwareVersion: '8.4.1',
+        configurations: ['长续航四驱版'],
+        status: 'accepted',
+        note: '长续航四驱版排放试验完成。',
+        updatedAt: '2026-09-27T08:00:00.000Z',
+        reviewSnapshotId: 'SNAP-118-02',
+        reviewedAt: '2026-09-27T09:20:00.000Z'
+      },
+      {
+        id: 'EV-118-07',
+        projectId: 'TA-2026-118',
+        regulationId: 'REG-COMPONENT',
+        name: '高压部件清单与安全声明',
+        type: 'part_list',
+        version: 'P2',
+        softwareVersion: '8.4.1',
+        configurations: ['长续航四驱版'],
+        status: 'accepted',
+        note: '部件号与申报配置一致。',
+        updatedAt: '2026-09-27T08:00:00.000Z',
+        reviewSnapshotId: 'SNAP-118-02',
+        reviewedAt: '2026-09-27T09:25:00.000Z'
+      },
+      {
+        id: 'EV-118-08',
+        projectId: 'TA-2026-118',
+        regulationId: 'REG-ENERGY',
+        name: '能耗一致性说明',
+        type: 'test_report',
+        version: 'D1',
+        softwareVersion: '8.4.1',
+        configurations: ['长续航四驱版'],
+        status: 'submitted',
+        note: '等待认证机构确认能耗一致性结论。',
+        updatedAt: '2026-09-28T02:00:00.000Z',
+        reviewSnapshotId: null
       }
     ],
     versions: [
@@ -163,7 +158,18 @@ export const seedProjects: ApprovalProject[] = [
         createdAt: '2026-09-27T04:10:00.000Z',
         summary: '更新软件基线并补充照明配置覆盖。',
         changes: ['整车软件由 8.3.9 升级至 8.4.1', '新增长续航四驱配置照明声明'],
-        impactedConfigurations: ['长续航四驱版']
+        impactedConfigurations: ['长续航四驱版'],
+        snapshot: {
+          id: 'SNAP-118-02',
+          maintenanceVersion: 'MY27.1',
+          softwareVersion: '8.4.1',
+          configuration: '长续航四驱版',
+          createdAt: '2026-09-27T04:10:00.000Z',
+          author: '远航汽车工程部',
+          reason: '软件基线升级，重新提交证据包',
+          changes: ['软件版本'],
+          impactedConfigurations: ['长续航四驱版']
+        }
       },
       {
         id: 'VER-118-01',
@@ -172,7 +178,106 @@ export const seedProjects: ApprovalProject[] = [
         createdAt: '2026-09-18T01:20:00.000Z',
         summary: '首次提交型式认证证据包。',
         changes: ['建立法规项目与首版测试报告关联'],
-        impactedConfigurations: ['长续航四驱版', '标准续航后驱版']
+        impactedConfigurations: ['长续航四驱版', '标准续航后驱版'],
+        snapshot: {
+          id: 'SNAP-118-01',
+          maintenanceVersion: 'MY27.1',
+          softwareVersion: '8.3.9',
+          configuration: '长续航四驱版',
+          createdAt: '2026-09-18T01:20:00.000Z',
+          author: '远航汽车工程部',
+          reason: '首次提交',
+          changes: ['维护版本', '软件版本', '配置范围'],
+          impactedConfigurations: ['长续航四驱版', '标准续航后驱版']
+        }
+      }
+    ],
+    packages: [
+      {
+        // 历史提交包：冻结在 8.3.9 旧快照，基线升级后内容保持原样
+        id: 'PKG-118-01',
+        projectId: 'TA-2026-118',
+        label: 'MY27.1 / SW 8.3.9 / 长续航四驱版',
+        submittedAt: '2026-09-18T01:20:00.000Z',
+        trigger: 'submit',
+        snapshot: {
+          id: 'SNAP-118-01',
+          maintenanceVersion: 'MY27.1',
+          softwareVersion: '8.3.9',
+          configuration: '长续航四驱版',
+          createdAt: '2026-09-18T01:20:00.000Z',
+          author: '远航汽车工程部',
+          reason: '首次提交',
+          changes: ['维护版本', '软件版本', '配置范围'],
+          impactedConfigurations: ['长续航四驱版', '标准续航后驱版']
+        },
+        status: 'submitted',
+        progress: 25,
+        evidence: [
+          {
+            id: 'EV-118-01',
+            regulationId: 'REG-BRAKE',
+            name: '制动系统型式试验报告',
+            type: 'test_report',
+            version: 'R3',
+            softwareVersion: '8.3.9',
+            configurations: ['长续航四驱版', '标准续航后驱版'],
+            status: 'accepted',
+            reviewSnapshotId: 'SNAP-118-01',
+            note: '首版制动报告，试验软件 8.3.9。'
+          },
+          {
+            id: 'EV-118-04',
+            regulationId: 'REG-BATTERY',
+            name: '动力电池包安全测试报告',
+            type: 'test_report',
+            version: 'R4',
+            softwareVersion: '8.3.9',
+            configurations: ['长续航四驱版', '标准续航后驱版'],
+            status: 'accepted',
+            reviewSnapshotId: 'SNAP-118-01',
+            note: '首版电池报告。'
+          },
+          {
+            id: 'EV-118-02',
+            regulationId: 'REG-SOFTWARE',
+            name: '软件更新影响评估',
+            type: 'software_report',
+            version: 'S1',
+            softwareVersion: '8.3.9',
+            configurations: ['长续航四驱版'],
+            status: 'submitted',
+            reviewSnapshotId: null,
+            note: '随首版证据包提交，等待审阅。'
+          },
+          {
+            id: 'EV-118-03',
+            regulationId: 'REG-LIGHT',
+            name: '外部照明装置测试记录',
+            type: 'test_report',
+            version: 'R1',
+            softwareVersion: '8.3.9',
+            configurations: ['标准续航后驱版'],
+            status: 'submitted',
+            reviewSnapshotId: null,
+            note: '仅覆盖标准续航后驱版。'
+          }
+        ],
+        regulations: [
+          { id: 'REG-BRAKE', code: 'GB 21670', title: '乘用车制动系统技术要求', category: '安全', required: true, status: 'complete', coverage: 100, issues: [] },
+          { id: 'REG-BATTERY', code: 'GB 38031', title: '电动汽车用动力蓄电池安全要求', category: '安全', required: true, status: 'complete', coverage: 100, issues: [] },
+          { id: 'REG-LIGHT', code: 'GB 4785', title: '汽车及挂车外部照明和光信号装置', category: '安全', required: true, status: 'conflict', coverage: 33, issues: ['证据配置范围未覆盖当前配置 长续航四驱版'] },
+          { id: 'REG-SOFTWARE', code: 'R156', title: '软件更新管理体系', category: '软件', required: true, status: 'conflict', coverage: 33, issues: ['1 项证据尚未通过审阅'] },
+          { id: 'REG-EMC', code: 'GB 34660', title: '道路车辆电磁兼容性要求', category: '环保', required: true, status: 'missing', coverage: 0, issues: ['尚未关联证据文件'] },
+          { id: 'REG-WLTP', code: 'GB 18352.6', title: '轻型汽车污染物排放限值', category: '环保', required: true, status: 'missing', coverage: 0, issues: ['尚未关联证据文件'] },
+          { id: 'REG-ENERGY', code: 'GB 27999', title: '乘用车燃料消耗量评价方法及指标', category: '能耗', required: true, status: 'missing', coverage: 0, issues: ['尚未关联证据文件'] },
+          { id: 'REG-COMPONENT', code: 'R100.2', title: '电动车辆特定部件安全要求', category: '部件', required: true, status: 'missing', coverage: 0, issues: ['尚未关联证据文件'] }
+        ],
+        blockingIssues: [
+          '2 项证据缺失、被拒、待补件或尚未完成审阅',
+          '法规项 GB 4785、R156、GB 34660、GB 18352.6、GB 27999、R100.2 尚未按当前快照完整覆盖'
+        ],
+        note: '首次提交型式认证证据包。'
       }
     ],
     audit: [
@@ -189,6 +294,13 @@ export const seedProjects: ApprovalProject[] = [
         action: '更新版本',
         detail: '软件基线更新为 8.4.1，需重新确认受影响法规项。',
         createdAt: '2026-09-27T04:10:00.000Z'
+      },
+      {
+        id: 'AUD-118-02',
+        actor: '系统',
+        action: '冻结提交包 PKG-118-01',
+        detail: '提交包按快照 MY27.1 / SW 8.3.9 / 长续航四驱版归档，历史内容保持不变。',
+        createdAt: '2026-09-18T01:20:00.000Z'
       }
     ]
   },
@@ -201,13 +313,14 @@ export const seedProjects: ApprovalProject[] = [
     maintenanceVersion: 'MY26.2',
     softwareVersion: '5.7.0',
     status: 'supplement_required',
-    progress: 64,
+    progress: 17,
     applicant: '北辰汽车',
     reviewer: '赵驰',
     agency: '华南认证中心',
     submittedAt: '2026-09-05',
     updatedAt: '2026-09-26T02:15:00.000Z',
     certificateExpiry: '2026-11-20',
+    currentSnapshotId: 'SNAP-109-01',
     regulations: regulationCatalog.slice(0, 6),
     evidence: [
       {
@@ -221,7 +334,9 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['七座旗舰版'],
         status: 'accepted',
         note: '实验室报告与申报配置一致。',
-        updatedAt: '2026-09-10T03:00:00.000Z'
+        updatedAt: '2026-09-10T03:00:00.000Z',
+        reviewSnapshotId: 'SNAP-109-01',
+        reviewedAt: '2026-09-10T03:30:00.000Z'
       },
       {
         id: 'EV-109-02',
@@ -234,7 +349,8 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['七座旗舰版'],
         status: 'resubmit',
         note: '测试软件版本与当前申报版本不一致。',
-        updatedAt: '2026-09-26T02:15:00.000Z'
+        updatedAt: '2026-09-26T02:15:00.000Z',
+        reviewSnapshotId: null
       }
     ],
     versions: [
@@ -245,9 +361,21 @@ export const seedProjects: ApprovalProject[] = [
         createdAt: '2026-09-05T08:00:00.000Z',
         summary: '首次提交 PHEV 整车证据包。',
         changes: ['建立 6 个法规项'],
-        impactedConfigurations: ['七座旗舰版']
+        impactedConfigurations: ['七座旗舰版'],
+        snapshot: {
+          id: 'SNAP-109-01',
+          maintenanceVersion: 'MY26.2',
+          softwareVersion: '5.7.0',
+          configuration: '七座旗舰版',
+          createdAt: '2026-09-05T08:00:00.000Z',
+          author: '北辰汽车',
+          reason: '首次提交',
+          changes: ['维护版本', '软件版本', '配置范围'],
+          impactedConfigurations: ['七座旗舰版']
+        }
       }
     ],
+    packages: [],
     audit: [
       {
         id: 'AUD-109-02',
@@ -274,7 +402,8 @@ export const seedProjects: ApprovalProject[] = [
     submittedAt: '2026-07-12',
     updatedAt: '2026-08-30T09:20:00.000Z',
     certificateExpiry: '2027-08-29',
-    regulations: regulationCatalog.slice(0, 5),
+    currentSnapshotId: 'SNAP-092-02',
+    regulations: regulationCatalog.filter((item) => item.id === 'REG-BRAKE'),
     evidence: [
       {
         id: 'EV-092-01',
@@ -288,7 +417,9 @@ export const seedProjects: ApprovalProject[] = [
         status: 'accepted',
         expiryDate: '2027-08-29',
         note: '已纳入正式批准版本。',
-        updatedAt: '2026-08-30T09:20:00.000Z'
+        updatedAt: '2026-08-30T09:20:00.000Z',
+        reviewSnapshotId: 'SNAP-092-02',
+        reviewedAt: '2026-08-30T09:20:00.000Z'
       }
     ],
     versions: [
@@ -299,7 +430,59 @@ export const seedProjects: ApprovalProject[] = [
         createdAt: '2026-08-30T09:20:00.000Z',
         summary: '完成审批并锁定正式提交包。',
         changes: ['批准全部法规项', '锁定软件与维护版本'],
-        impactedConfigurations: ['高顶货运版']
+        impactedConfigurations: ['高顶货运版'],
+        snapshot: {
+          id: 'SNAP-092-02',
+          maintenanceVersion: 'MY26.0',
+          softwareVersion: '3.2.4',
+          configuration: '高顶货运版',
+          createdAt: '2026-08-30T09:20:00.000Z',
+          author: '西岭商用车',
+          reason: '完成审批',
+          changes: ['维护版本', '软件版本', '配置范围'],
+          impactedConfigurations: ['高顶货运版']
+        }
+      }
+    ],
+    packages: [
+      {
+        id: 'PKG-092-01',
+        projectId: 'TA-2026-092',
+        label: 'MY26.0 / SW 3.2.4 / 高顶货运版',
+        submittedAt: '2026-08-30T09:20:00.000Z',
+        trigger: 'approve',
+        snapshot: {
+          id: 'SNAP-092-02',
+          maintenanceVersion: 'MY26.0',
+          softwareVersion: '3.2.4',
+          configuration: '高顶货运版',
+          createdAt: '2026-08-30T09:20:00.000Z',
+          author: '西岭商用车',
+          reason: '完成审批',
+          changes: ['维护版本', '软件版本', '配置范围'],
+          impactedConfigurations: ['高顶货运版']
+        },
+        status: 'approved',
+        progress: 100,
+        evidence: [
+          {
+            id: 'EV-092-01',
+            regulationId: 'REG-BRAKE',
+            name: '制动系统批准报告',
+            type: 'certificate',
+            version: 'R1',
+            softwareVersion: '3.2.4',
+            configurations: ['高顶货运版'],
+            status: 'accepted',
+            reviewSnapshotId: 'SNAP-092-02',
+            note: '已纳入正式批准版本。'
+          }
+        ],
+        regulations: [
+          { id: 'REG-BRAKE', code: 'GB 21670', title: '乘用车制动系统技术要求', category: '安全', required: true, status: 'complete', coverage: 100, issues: [] }
+        ],
+        blockingIssues: [],
+        note: '全部适用范围证据通过审阅，提交包版本锁定。'
       }
     ],
     audit: [
@@ -321,12 +504,13 @@ export const seedProjects: ApprovalProject[] = [
     maintenanceVersion: 'MY27.0',
     softwareVersion: '1.9.2',
     status: 'draft',
-    progress: 32,
+    progress: 0,
     applicant: '江洲新能源',
     reviewer: '待分派',
     agency: '华东认证中心',
     updatedAt: '2026-09-27T12:30:00.000Z',
     certificateExpiry: '2026-10-24',
+    currentSnapshotId: 'SNAP-120-01',
     regulations: regulationCatalog.filter((item) => ['REG-BRAKE', 'REG-EMC', 'REG-BATTERY'].includes(item.id)),
     evidence: [
       {
@@ -340,7 +524,8 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['标准厢式版'],
         status: 'submitted',
         note: '等待认证机构确认零件号完整性。',
-        updatedAt: '2026-09-27T12:30:00.000Z'
+        updatedAt: '2026-09-27T12:30:00.000Z',
+        reviewSnapshotId: null
       }
     ],
     versions: [
@@ -351,9 +536,21 @@ export const seedProjects: ApprovalProject[] = [
         createdAt: '2026-09-27T12:30:00.000Z',
         summary: '建立认证项目草稿。',
         changes: ['录入整车基础信息和电池部件清单'],
-        impactedConfigurations: ['标准厢式版']
+        impactedConfigurations: ['标准厢式版'],
+        snapshot: {
+          id: 'SNAP-120-01',
+          maintenanceVersion: 'MY27.0',
+          softwareVersion: '1.9.2',
+          configuration: '标准厢式版',
+          createdAt: '2026-09-27T12:30:00.000Z',
+          author: '江洲新能源',
+          reason: '创建草稿',
+          changes: ['维护版本', '软件版本', '配置范围'],
+          impactedConfigurations: ['标准厢式版']
+        }
       }
     ],
+    packages: [],
     audit: [
       {
         id: 'AUD-120-01',

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { certificationApi } from '~/services/certification-api';
-import type { ProjectFilters, ProjectStatus } from '~/types/certification';
+import type { ProjectFilters } from '~/types/certification';
 import { useCertificationStore } from '~/stores/certification';
+import { deriveProgress, deriveProjectRisk, riskLabel } from '~/services/snapshots';
 
 const store = useCertificationStore();
 const queryClient = useQueryClient();
@@ -25,6 +26,7 @@ const statusOptions = [
 
 const riskOptions = [
   { label: '全部关注项', value: 'all' },
+  { label: '待按新基线确认', value: 'pending_confirmation' },
   { label: '证书临近到期', value: 'expiring' },
   { label: '法规覆盖缺失', value: 'missing' },
   { label: '软件版本冲突', value: 'version_conflict' }
@@ -43,21 +45,15 @@ const { data, isPending, isError, refetch } = useQuery({
 const projectRows = computed(() => data.value ?? []);
 const openCount = computed(() => store.projects.filter((project) => !['approved', 'rejected'].includes(project.status)).length);
 const supplementCount = computed(() => store.projects.filter((project) => project.status === 'supplement_required').length);
-const versionConflictCount = computed(() =>
-  store.projects.filter((project) =>
-    project.evidence.some((evidence) => evidence.softwareVersion !== project.softwareVersion)
-  ).length
+const versionConflictCount = computed(
+  () => store.projects.filter((project) => deriveProjectRisk(project) === 'version_conflict').length
 );
-const expiringCount = computed(() =>
-  store.projects.filter((project) => new Date(project.certificateExpiry) <= new Date('2026-12-31')).length
+const pendingConfirmationCount = computed(
+  () => store.projects.filter((project) => project.evidence.some((e) => e.status === 'pending_confirmation')).length
 );
-
-function riskLabel(project: (typeof projectRows.value)[number]) {
-  if (project.evidence.some((item) => item.softwareVersion !== project.softwareVersion)) return '软件版本冲突';
-  if (project.regulations.some((item) => item.status !== 'complete')) return '法规覆盖缺失';
-  if (new Date(project.certificateExpiry) <= new Date('2026-12-31')) return '证书临近到期';
-  return '未见阻断项';
-}
+const expiringCount = computed(
+  () => store.projects.filter((project) => new Date(project.certificateExpiry) <= new Date('2026-12-31')).length
+);
 
 async function invalidateAndRefetch() {
   await queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -85,10 +81,10 @@ onMounted(() => {
       <StatTile label="开放认证项目" :value="openCount" note="草稿、审阅和补件队列" />
     </div>
     <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-      <StatTile label="待补件项目" :value="supplementCount" note="认证机构已退回要求补件" />
+      <StatTile label="待按新基线确认" :value="pendingConfirmationCount" note="基线更新后失效、等待重新确认的证据" />
     </div>
     <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-      <StatTile label="版本冲突" :value="versionConflictCount" note="证据软件版本与申报基线不一致" />
+      <StatTile label="版本冲突" :value="versionConflictCount" note="证据软件版本与当前快照基线不一致" />
     </div>
     <div class="col-span-12 sm:col-span-6 xl:col-span-3">
       <StatTile label="90 天内到期" :value="expiringCount" note="证书或批准文件临近失效" />
@@ -149,15 +145,21 @@ onMounted(() => {
             <td>
               <p>{{ project.maintenanceVersion }}</p>
               <p class="mt-1 font-mono text-xs text-slate-500">SW {{ project.softwareVersion }}</p>
+              <p class="mt-1 font-mono text-[11px] text-slate-400">快照 {{ project.currentSnapshotId }}</p>
             </td>
             <td><StatusBadge :status="project.status" /></td>
             <td class="min-w-[150px]">
               <div class="flex items-center gap-3">
-                <UProgress :value="project.progress" size="xs" class="min-w-[80px]" />
-                <span class="metric-value text-sm">{{ project.progress }}%</span>
+                <UProgress :value="deriveProgress(project)" size="xs" class="min-w-[80px]" />
+                <span class="metric-value text-sm">{{ deriveProgress(project) }}%</span>
               </div>
             </td>
-            <td class="text-sm">{{ riskLabel(project) }}</td>
+            <td class="text-sm">
+              {{ riskLabel(project) }}
+              <p v-if="project.evidence.some((e) => e.status === 'pending_confirmation')" class="mt-1 text-xs text-purple-800">
+                {{ project.evidence.filter((e) => e.status === 'pending_confirmation').length }} 项证据待重新确认
+              </p>
+            </td>
             <td>
               <p>{{ project.agency }}</p>
               <p class="mt-1 text-xs text-slate-500">{{ project.reviewer }}</p>

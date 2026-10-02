@@ -1,17 +1,5 @@
-import { seedProjects } from '~/data/seed';
 import type { ApprovalProject } from '~/types/certification';
-
-const STORAGE_KEY = 'vehicle-type-approval-projects-v1';
-
-function currentProjects(): ApprovalProject[] {
-  if (typeof localStorage === 'undefined') return structuredClone(seedProjects);
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as ApprovalProject[]) : structuredClone(seedProjects);
-  } catch {
-    return structuredClone(seedProjects);
-  }
-}
+import { loadProjects } from './persistence';
 
 export const mockFetch: typeof fetch = async (input) => {
   const source = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -27,12 +15,12 @@ export const mockFetch: typeof fetch = async (input) => {
     });
 
   if (url.pathname === '/api/projects') {
-    return send(currentProjects());
+    return send(loadProjects());
   }
 
   const match = url.pathname.match(/^\/api\/projects\/([^/]+)$/);
   if (match) {
-    const project = currentProjects().find((item) => item.id === decodeURIComponent(match[1]));
+    const project = loadProjects().find((item) => item.id === decodeURIComponent(match[1]));
     return project ? send(project) : send({ message: '项目不存在' }, 404);
   }
 

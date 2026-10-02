@@ -9,9 +9,11 @@ const note = ref('');
 const message = ref('');
 const error = ref('');
 
+const pendingStatuses = ['rejected', 'resubmit', 'missing', 'pending_confirmation'];
+
 const projectOptions = computed(() =>
   store.projects
-    .filter((project) => project.evidence.some((evidence) => ['rejected', 'resubmit', 'missing'].includes(evidence.status)))
+    .filter((project) => project.evidence.some((evidence) => pendingStatuses.includes(evidence.status)))
     .map((project) => ({
       label: `${project.id} · ${project.name}`,
       value: project.id
@@ -20,7 +22,7 @@ const projectOptions = computed(() =>
 
 const current = computed(() => store.projects.find((project) => project.id === selectedProjectId.value));
 const pendingEvidence = computed(
-  () => current.value?.evidence.filter((item) => ['rejected', 'resubmit', 'missing'].includes(item.status)) ?? []
+  () => current.value?.evidence.filter((item) => pendingStatuses.includes(item.status)) ?? []
 );
 
 function submit() {
@@ -35,10 +37,14 @@ function submit() {
     error.value = errors.join('；');
     return;
   }
-  const count = store.bulkSupplement(current.value.id, selectedEvidence.value, note.value);
+  const outcome = store.bulkSupplement(current.value.id, selectedEvidence.value, note.value);
+  if (!outcome.ok) {
+    error.value = outcome.error ?? '批量补件失败';
+    return;
+  }
   selectedEvidence.value = [];
   note.value = '';
-  message.value = `已完成 ${count} 项证据补件，并同步到项目版本基线。`;
+  message.value = `已完成 ${outcome.count} 项证据补件，并同步到当前版本快照，等待审阅人重新确认。`;
 }
 
 onMounted(() => {
@@ -50,7 +56,7 @@ onMounted(() => {
 <template>
   <div class="mb-6">
     <h1 class="text-2xl font-semibold">批量补件工作区</h1>
-    <p class="mt-1 text-sm text-slate-600">将退回项统一更新到当前软件基线，并记录补件范围和影响配置。</p>
+    <p class="mt-1 text-sm text-slate-600">将退回项或基线更新后失效项统一更新到当前软件基线，并记录补件范围和影响配置。</p>
   </div>
 
   <div v-if="message" class="mb-4 border border-green-200 bg-green-50 p-3 text-sm text-green-900">{{ message }}</div>
@@ -69,6 +75,7 @@ onMounted(() => {
         <div>
           <p class="text-slate-500">当前版本基线</p>
           <p class="mt-1 font-medium">{{ current.maintenanceVersion }} / SW {{ current.softwareVersion }}</p>
+          <p class="mt-1 font-mono text-xs text-slate-400">快照 {{ current.currentSnapshotId }}</p>
         </div>
         <div>
           <p class="text-slate-500">待补件数量</p>
@@ -80,7 +87,7 @@ onMounted(() => {
     <section class="border border-slate-200 bg-white">
       <div class="border-b border-slate-200 px-4 py-3">
         <h2 class="font-semibold">选择待补件证据</h2>
-        <p class="mt-1 text-xs text-slate-500">提交后证据状态变为已提交，软件版本自动更新为项目基线。</p>
+        <p class="mt-1 text-xs text-slate-500">提交后证据状态变为已提交、软件版本更新为当前基线，必须由审阅人重新确认，不会自动接受。</p>
       </div>
       <form class="p-4" @submit.prevent="submit">
         <div class="space-y-3">
@@ -92,6 +99,7 @@ onMounted(() => {
                 <StatusBadge :status="item.status" />
               </span>
               <span class="mt-2 block text-sm text-slate-600">{{ item.note }}</span>
+              <span v-if="item.invalidatedReason" class="mt-1 block text-xs text-purple-800">{{ item.invalidatedReason }}</span>
               <span class="mt-2 block text-xs text-slate-500">
                 {{ item.regulationId }} · 文件 {{ item.version }} · 软件 {{ item.softwareVersion }} · {{ item.configurations.join('、') }}
               </span>

@@ -4,6 +4,8 @@ import { useCertificationStore } from '~/stores/certification';
 const store = useCertificationStore();
 const today = new Date('2026-09-29');
 
+onMounted(() => store.hydrate());
+
 const reminders = computed(() =>
   store.projects
     .flatMap((project) => {
