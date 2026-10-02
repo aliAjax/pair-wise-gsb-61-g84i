@@ -35,6 +35,10 @@ function submit() {
   Object.assign(errors, validateProjectInput(form));
   if (Object.keys(errors).length) return;
   const id = store.createProject({ ...form });
+  if (!id) {
+    errors.name = '项目保存失败，请检查本地存储后重试，表单内容已保留';
+    return;
+  }
   void router.push(`/projects/${id}`);
 }
 </script>

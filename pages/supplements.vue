@@ -11,7 +11,7 @@ const error = ref('');
 
 const projectOptions = computed(() =>
   store.projects
-    .filter((project) => project.evidence.some((evidence) => ['rejected', 'resubmit', 'missing'].includes(evidence.status)))
+    .filter((project) => project.evidence.some((evidence) => ['rejected', 'resubmit', 'missing', 'stale'].includes(evidence.status)))
     .map((project) => ({
       label: `${project.id} · ${project.name}`,
       value: project.id
@@ -20,7 +20,7 @@ const projectOptions = computed(() =>
 
 const current = computed(() => store.projects.find((project) => project.id === selectedProjectId.value));
 const pendingEvidence = computed(
-  () => current.value?.evidence.filter((item) => ['rejected', 'resubmit', 'missing'].includes(item.status)) ?? []
+  () => current.value?.evidence.filter((item) => ['rejected', 'resubmit', 'missing', 'stale'].includes(item.status)) ?? []
 );
 
 function submit() {
@@ -50,7 +50,7 @@ onMounted(() => {
 <template>
   <div class="mb-6">
     <h1 class="text-2xl font-semibold">批量补件工作区</h1>
-    <p class="mt-1 text-sm text-slate-600">将退回项统一更新到当前软件基线，并记录补件范围和影响配置。</p>
+    <p class="mt-1 text-sm text-slate-600">将退回项和基线更新后失效的证据统一更新到当前软件基线并重新提交，随后须重新确认接受（配置覆盖 + 软件版本一致）。</p>
   </div>
 
   <div v-if="message" class="mb-4 border border-green-200 bg-green-50 p-3 text-sm text-green-900">{{ message }}</div>

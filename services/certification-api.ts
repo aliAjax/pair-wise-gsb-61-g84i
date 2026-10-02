@@ -1,6 +1,12 @@
 import { ofetch } from 'ofetch';
 import type { ApprovalProject, ProjectFilters } from '~/types/certification';
 import { mockFetch } from './mock-fetch';
+import {
+  computeRiskLabel,
+  isAcceptanceCurrent,
+  recomputeRegulations,
+  softwareMatchesBaseline
+} from './snapshot';
 
 const client = ofetch.create({
   baseURL: '/api',
@@ -19,13 +25,18 @@ function matches(project: ApprovalProject, filters: ProjectFilters) {
       .includes(query);
   const matchesStatus = filters.status === 'all' || project.status === filters.status;
   const matchesAgency = filters.agency === 'all' || project.agency === filters.agency;
+
+  const stale = project.evidence.some(
+    (item) => item.status === 'stale' || (item.status === 'accepted' && !isAcceptanceCurrent(item, project))
+  );
+  const regulations = recomputeRegulations(project);
   const matchesRisk =
     filters.risk === 'all' ||
     (filters.risk === 'expiring' && new Date(project.certificateExpiry) <= new Date('2026-12-31')) ||
-    (filters.risk === 'missing' &&
-      project.regulations.some((item) => item.status === 'missing' || item.status === 'conflict')) ||
+    (filters.risk === 'missing' && regulations.some((item) => item.status === 'missing' || item.status === 'conflict')) ||
     (filters.risk === 'version_conflict' &&
-      project.evidence.some((item) => item.softwareVersion !== project.softwareVersion));
+      project.evidence.some((item) => !softwareMatchesBaseline(item, project))) ||
+    (filters.risk === 'stale' && stale);
 
   return matchesQuery && matchesStatus && matchesAgency && matchesRisk;
 }
@@ -40,3 +51,5 @@ export const certificationApi = {
     return client<ApprovalProject>(`/projects/${encodeURIComponent(id)}`);
   }
 };
+
+export { computeRiskLabel };

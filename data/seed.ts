@@ -101,6 +101,8 @@ export const seedProjects: ApprovalProject[] = [
     updatedAt: '2026-09-28T10:45:00.000Z',
     certificateExpiry: '2026-12-16',
     regulations: regulationCatalog,
+    baselineVersionId: 'VER-118-02',
+    submissionPackages: [],
     evidence: [
       {
         id: 'EV-118-01',
@@ -113,7 +115,14 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['长续航四驱版', '标准续航后驱版'],
         status: 'accepted',
         note: '试验条件与量产软件基线一致。',
-        updatedAt: '2026-09-20T03:00:00.000Z'
+        updatedAt: '2026-09-20T03:00:00.000Z',
+        acceptedSnapshot: {
+          maintenanceVersion: 'MY27.1',
+          softwareVersion: '8.4.1',
+          configuration: '长续航四驱版',
+          versionId: 'VER-118-02',
+          acceptedAt: '2026-09-20T03:00:00.000Z'
+        }
       },
       {
         id: 'EV-118-02',
@@ -152,7 +161,14 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['长续航四驱版', '标准续航后驱版'],
         status: 'accepted',
         note: '覆盖全部量产电池配置。',
-        updatedAt: '2026-09-19T08:00:00.000Z'
+        updatedAt: '2026-09-19T08:00:00.000Z',
+        acceptedSnapshot: {
+          maintenanceVersion: 'MY27.1',
+          softwareVersion: '8.4.1',
+          configuration: '长续航四驱版',
+          versionId: 'VER-118-02',
+          acceptedAt: '2026-09-19T08:00:00.000Z'
+        }
       }
     ],
     versions: [
@@ -161,6 +177,9 @@ export const seedProjects: ApprovalProject[] = [
         label: 'MY27.1 / 8.4.1',
         author: '远航汽车工程部',
         createdAt: '2026-09-27T04:10:00.000Z',
+        maintenanceVersion: 'MY27.1',
+        softwareVersion: '8.4.1',
+        configuration: '长续航四驱版',
         summary: '更新软件基线并补充照明配置覆盖。',
         changes: ['整车软件由 8.3.9 升级至 8.4.1', '新增长续航四驱配置照明声明'],
         impactedConfigurations: ['长续航四驱版']
@@ -170,6 +189,9 @@ export const seedProjects: ApprovalProject[] = [
         label: 'MY27.1 / 8.3.9',
         author: '远航汽车工程部',
         createdAt: '2026-09-18T01:20:00.000Z',
+        maintenanceVersion: 'MY27.1',
+        softwareVersion: '8.3.9',
+        configuration: '长续航四驱版',
         summary: '首次提交型式认证证据包。',
         changes: ['建立法规项目与首版测试报告关联'],
         impactedConfigurations: ['长续航四驱版', '标准续航后驱版']
@@ -209,6 +231,8 @@ export const seedProjects: ApprovalProject[] = [
     updatedAt: '2026-09-26T02:15:00.000Z',
     certificateExpiry: '2026-11-20',
     regulations: regulationCatalog.slice(0, 6),
+    baselineVersionId: 'VER-109-01',
+    submissionPackages: [],
     evidence: [
       {
         id: 'EV-109-01',
@@ -221,7 +245,14 @@ export const seedProjects: ApprovalProject[] = [
         configurations: ['七座旗舰版'],
         status: 'accepted',
         note: '实验室报告与申报配置一致。',
-        updatedAt: '2026-09-10T03:00:00.000Z'
+        updatedAt: '2026-09-10T03:00:00.000Z',
+        acceptedSnapshot: {
+          maintenanceVersion: 'MY26.2',
+          softwareVersion: '5.7.0',
+          configuration: '七座旗舰版',
+          versionId: 'VER-109-01',
+          acceptedAt: '2026-09-10T03:00:00.000Z'
+        }
       },
       {
         id: 'EV-109-02',
@@ -243,6 +274,9 @@ export const seedProjects: ApprovalProject[] = [
         label: 'MY26.2 / 5.7.0',
         author: '北辰汽车',
         createdAt: '2026-09-05T08:00:00.000Z',
+        maintenanceVersion: 'MY26.2',
+        softwareVersion: '5.7.0',
+        configuration: '七座旗舰版',
         summary: '首次提交 PHEV 整车证据包。',
         changes: ['建立 6 个法规项'],
         impactedConfigurations: ['七座旗舰版']
@@ -275,6 +309,43 @@ export const seedProjects: ApprovalProject[] = [
     updatedAt: '2026-08-30T09:20:00.000Z',
     certificateExpiry: '2027-08-29',
     regulations: regulationCatalog.slice(0, 5),
+    baselineVersionId: 'VER-092-02',
+    submissionPackages: [
+      {
+        id: 'PKG-092-01',
+        packageNo: 1,
+        projectId: 'TA-2026-092',
+        createdAt: '2026-08-30T09:20:00.000Z',
+        actor: '何谦',
+        triggeredBy: 'approved',
+        reason: '全部适用范围证据通过审阅，提交包版本锁定。',
+        baseline: { maintenanceVersion: 'MY26.0', softwareVersion: '3.2.4', configuration: '高顶货运版' },
+        versionId: 'VER-092-02',
+        evidence: [
+          {
+            id: 'EV-092-01',
+            regulationId: 'REG-BRAKE',
+            name: '制动系统批准报告',
+            version: 'R1',
+            softwareVersion: '3.2.4',
+            configurations: ['高顶货运版'],
+            status: 'accepted',
+            note: '已纳入正式批准版本。'
+          }
+        ],
+        regulations: regulationCatalog.slice(0, 5).map((item) => ({
+          id: item.id,
+          code: item.code,
+          title: item.title,
+          category: item.category,
+          required: item.required,
+          status: 'complete' as const,
+          coverage: 100,
+          issues: [] as string[]
+        })),
+        blockingIssues: []
+      }
+    ],
     evidence: [
       {
         id: 'EV-092-01',
@@ -288,7 +359,14 @@ export const seedProjects: ApprovalProject[] = [
         status: 'accepted',
         expiryDate: '2027-08-29',
         note: '已纳入正式批准版本。',
-        updatedAt: '2026-08-30T09:20:00.000Z'
+        updatedAt: '2026-08-30T09:20:00.000Z',
+        acceptedSnapshot: {
+          maintenanceVersion: 'MY26.0',
+          softwareVersion: '3.2.4',
+          configuration: '高顶货运版',
+          versionId: 'VER-092-02',
+          acceptedAt: '2026-08-30T09:20:00.000Z'
+        }
       }
     ],
     versions: [
@@ -297,6 +375,9 @@ export const seedProjects: ApprovalProject[] = [
         label: '批准版 / 3.2.4',
         author: '何谦',
         createdAt: '2026-08-30T09:20:00.000Z',
+        maintenanceVersion: 'MY26.0',
+        softwareVersion: '3.2.4',
+        configuration: '高顶货运版',
         summary: '完成审批并锁定正式提交包。',
         changes: ['批准全部法规项', '锁定软件与维护版本'],
         impactedConfigurations: ['高顶货运版']
@@ -328,6 +409,8 @@ export const seedProjects: ApprovalProject[] = [
     updatedAt: '2026-09-27T12:30:00.000Z',
     certificateExpiry: '2026-10-24',
     regulations: regulationCatalog.filter((item) => ['REG-BRAKE', 'REG-EMC', 'REG-BATTERY'].includes(item.id)),
+    baselineVersionId: 'VER-120-01',
+    submissionPackages: [],
     evidence: [
       {
         id: 'EV-120-01',
@@ -349,6 +432,9 @@ export const seedProjects: ApprovalProject[] = [
         label: 'MY27.0 / 1.9.2',
         author: '江洲新能源',
         createdAt: '2026-09-27T12:30:00.000Z',
+        maintenanceVersion: 'MY27.0',
+        softwareVersion: '1.9.2',
+        configuration: '标准厢式版',
         summary: '建立认证项目草稿。',
         changes: ['录入整车基础信息和电池部件清单'],
         impactedConfigurations: ['标准厢式版']

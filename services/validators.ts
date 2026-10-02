@@ -1,4 +1,10 @@
-import type { ApprovalProject, ProjectInput } from '~/types/certification';
+import type { ApprovalProject, EvidenceItem, ProjectInput } from '~/types/certification';
+import {
+  computeBlockingIssues,
+  coversConfiguration,
+  recomputeRegulations,
+  softwareMatchesBaseline
+} from './snapshot';
 
 export function validateProjectInput(input: ProjectInput) {
   const errors: Partial<Record<keyof ProjectInput, string>> = {};
@@ -16,24 +22,30 @@ export function validateProjectInput(input: ProjectInput) {
   return errors;
 }
 
+/** 批准前阻断项：法规覆盖、失效证据、版本错配、配置覆盖全部按当前快照重算 */
 export function validateSubmission(project: ApprovalProject) {
-  const issues: string[] = [];
-  const requiredRegulations = project.regulations.filter((item) => item.required);
-  const missingEvidence = project.evidence.filter((item) =>
-    ['missing', 'rejected', 'resubmit'].includes(item.status)
-  );
-  const versionMismatch = project.evidence.filter(
-    (item) => item.softwareVersion !== project.softwareVersion
-  );
-  const coverageIssue = requiredRegulations.find((item) => item.status !== 'complete');
-  const expiring = new Date(project.certificateExpiry) <= new Date('2026-12-31');
+  return computeBlockingIssues(project, recomputeRegulations(project));
+}
 
-  if (missingEvidence.length) issues.push(`${missingEvidence.length} 项证据缺失、被拒或待补件`);
-  if (versionMismatch.length) issues.push(`${versionMismatch.length} 项证据软件版本与项目基线不一致`);
-  if (coverageIssue) issues.push(`法规项 ${coverageIssue.code} 尚未完整覆盖配置`);
-  if (expiring) issues.push('证书有效期不足 90 天，需先确认续证安排');
-
-  return issues;
+/**
+ * 重新确认（接受）证据的强制条件：
+ * 1. 配置范围必须覆盖项目当前配置；
+ * 2. 证据软件版本必须与项目基线相同。
+ * 任一不满足都不能接受，相应证据也会阻断项目批准。
+ */
+export function validateEvidenceAcceptance(project: ApprovalProject, evidence: EvidenceItem) {
+  const errors: string[] = [];
+  if (!coversConfiguration(evidence, project.configuration)) {
+    errors.push(
+      `配置范围未覆盖当前配置「${project.configuration}」（证据覆盖：${evidence.configurations.join('、') || '无'}）`
+    );
+  }
+  if (!softwareMatchesBaseline(evidence, project)) {
+    errors.push(
+      `软件版本 ${evidence.softwareVersion} 与项目基线 ${project.softwareVersion} 不一致`
+    );
+  }
+  return errors;
 }
 
 export function validateEvidenceUpgrade(project: ApprovalProject, evidenceIds: string[], note: string) {

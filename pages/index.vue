@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { certificationApi } from '~/services/certification-api';
-import type { ProjectFilters, ProjectStatus } from '~/types/certification';
+import { certificationApi, computeRiskLabel } from '~/services/certification-api';
+import type { ProjectFilters } from '~/types/certification';
 import { useCertificationStore } from '~/stores/certification';
+import { isAcceptanceCurrent, recomputeRegulations } from '~/services/snapshot';
 
 const store = useCertificationStore();
 const queryClient = useQueryClient();
@@ -25,6 +26,7 @@ const statusOptions = [
 
 const riskOptions = [
   { label: '全部关注项', value: 'all' },
+  { label: '基线更新待确认', value: 'stale' },
   { label: '证书临近到期', value: 'expiring' },
   { label: '法规覆盖缺失', value: 'missing' },
   { label: '软件版本冲突', value: 'version_conflict' }
@@ -43,20 +45,22 @@ const { data, isPending, isError, refetch } = useQuery({
 const projectRows = computed(() => data.value ?? []);
 const openCount = computed(() => store.projects.filter((project) => !['approved', 'rejected'].includes(project.status)).length);
 const supplementCount = computed(() => store.projects.filter((project) => project.status === 'supplement_required').length);
-const versionConflictCount = computed(() =>
-  store.projects.filter((project) =>
-    project.evidence.some((evidence) => evidence.softwareVersion !== project.softwareVersion)
-  ).length
+const staleCount = computed(
+  () =>
+    store.projects.filter((project) =>
+      project.evidence.some(
+        (item) =>
+          item.status === 'stale' ||
+          (item.status === 'accepted' && !isAcceptanceCurrent(item, project))
+      )
+    ).length
 );
 const expiringCount = computed(() =>
   store.projects.filter((project) => new Date(project.certificateExpiry) <= new Date('2026-12-31')).length
 );
 
 function riskLabel(project: (typeof projectRows.value)[number]) {
-  if (project.evidence.some((item) => item.softwareVersion !== project.softwareVersion)) return '软件版本冲突';
-  if (project.regulations.some((item) => item.status !== 'complete')) return '法规覆盖缺失';
-  if (new Date(project.certificateExpiry) <= new Date('2026-12-31')) return '证书临近到期';
-  return '未见阻断项';
+  return computeRiskLabel(project, recomputeRegulations(project));
 }
 
 async function invalidateAndRefetch() {
@@ -88,7 +92,7 @@ onMounted(() => {
       <StatTile label="待补件项目" :value="supplementCount" note="认证机构已退回要求补件" />
     </div>
     <div class="col-span-12 sm:col-span-6 xl:col-span-3">
-      <StatTile label="版本冲突" :value="versionConflictCount" note="证据软件版本与申报基线不一致" />
+      <StatTile label="基线更新待确认" :value="staleCount" note="旧快照接受证据已失效，需重新确认" />
     </div>
     <div class="col-span-12 sm:col-span-6 xl:col-span-3">
       <StatTile label="90 天内到期" :value="expiringCount" note="证书或批准文件临近失效" />

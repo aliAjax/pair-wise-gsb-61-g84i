@@ -1,16 +1,8 @@
-import { seedProjects } from '~/data/seed';
 import type { ApprovalProject } from '~/types/certification';
-
-const STORAGE_KEY = 'vehicle-type-approval-projects-v1';
+import { loadProjects } from './storage';
 
 function currentProjects(): ApprovalProject[] {
-  if (typeof localStorage === 'undefined') return structuredClone(seedProjects);
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as ApprovalProject[]) : structuredClone(seedProjects);
-  } catch {
-    return structuredClone(seedProjects);
-  }
+  return loadProjects();
 }
 
 export const mockFetch: typeof fetch = async (input) => {
